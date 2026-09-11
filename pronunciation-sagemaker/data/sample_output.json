@@ -1,0 +1,430 @@
+{
+  "language": "fr",
+  "accepted": false,
+  "scorePercent": 65.32093887259363,
+  "faults": [
+    "omission",
+    "substitution"
+  ],
+  "assessmentVersion": "french-core-v4",
+  "words": [
+    {
+      "id": "w0",
+      "referenceWord": "Les",
+      "producedText": "lez",
+      "status": "correct",
+      "faults": [],
+      "scorePercent": 99.9559045038363,
+      "phonemes": [
+        {
+          "referencePhoneme": "l",
+          "producedPhoneme": "l",
+          "scorePercent": 99.99752250524446,
+          "status": "correct",
+          "tolerated": false,
+          "graphemes": {
+            "start": 0,
+            "end": 1
+          }
+        },
+        {
+          "referencePhoneme": "e",
+          "producedPhoneme": "e",
+          "scorePercent": 99.95332829575254,
+          "status": "correct",
+          "tolerated": false,
+          "graphemes": {
+            "start": 1,
+            "end": 3
+          }
+        },
+        {
+          "referencePhoneme": "z",
+          "producedPhoneme": "z",
+          "scorePercent": 99.91686271051188,
+          "status": "correct",
+          "tolerated": false,
+          "graphemes": {
+            "start": 2,
+            "end": 3
+          }
+        }
+      ],
+      "mispronouncedGraphemes": []
+    },
+    {
+      "id": "w1",
+      "referenceWord": "enfants",
+      "producedText": "ɑ̃fɑ̃",
+      "status": "correct",
+      "faults": [],
+      "scorePercent": 80.46614474486368,
+      "phonemes": [
+        {
+          "referencePhoneme": "ɑ̃",
+          "producedPhoneme": "ɑ̃",
+          "scorePercent": 70.69970876891233,
+          "status": "correct",
+          "tolerated": false,
+          "graphemes": {
+            "start": 0,
+            "end": 2
+          }
+        },
+        {
+          "referencePhoneme": "f",
+          "producedPhoneme": "f",
+          "scorePercent": 99.99720476305815,
+          "status": "correct",
+          "tolerated": false,
+          "graphemes": {
+            "start": 2,
+            "end": 3
+          }
+        },
+        {
+          "referencePhoneme": "ɑ̃",
+          "producedPhoneme": "ɑ̃",
+          "scorePercent": 70.70152070262054,
+          "status": "correct",
+          "tolerated": false,
+          "graphemes": {
+            "start": 3,
+            "end": 7
+          }
+        }
+      ],
+      "mispronouncedGraphemes": []
+    },
+    {
+      "id": "w2",
+      "referenceWord": "ont",
+      "producedText": null,
+      "status": "omitted",
+      "faults": [
+        "omission"
+      ],
+      "scorePercent": 0.0,
+      "phonemes": [
+        {
+          "referencePhoneme": "ɔ̃",
+          "producedPhoneme": null,
+          "scorePercent": 0.0,
+          "status": "omitted",
+          "tolerated": false,
+          "graphemes": {
+            "start": 0,
+            "end": 3
+          }
+        }
+      ],
+      "mispronouncedGraphemes": []
+    },
+    {
+      "id": "w3",
+      "referenceWord": "mangé",
+      "producedText": "mɑ̃ʒɛ",
+      "status": "correct",
+      "faults": [],
+      "scorePercent": 76.71152263391451,
+      "phonemes": [
+        {
+          "referencePhoneme": "m",
+          "producedPhoneme": "m",
+          "scorePercent": 99.99832061386414,
+          "status": "correct",
+          "tolerated": false,
+          "graphemes": {
+            "start": 0,
+            "end": 1
+          }
+        },
+        {
+          "referencePhoneme": "ɑ̃",
+          "producedPhoneme": "ɑ̃",
+          "scorePercent": 70.68459777221786,
+          "status": "correct",
+          "tolerated": false,
+          "graphemes": {
+            "start": 1,
+            "end": 3
+          }
+        },
+        {
+          "referencePhoneme": "ʒ",
+          "producedPhoneme": "ʒ",
+          "scorePercent": 99.96509562541668,
+          "status": "correct",
+          "tolerated": false,
+          "graphemes": {
+            "start": 3,
+            "end": 4
+          }
+        },
+        {
+          "referencePhoneme": "e",
+          "producedPhoneme": "ɛ",
+          "scorePercent": 36.1980765241594,
+          "status": "correct",
+          "tolerated": true,
+          "graphemes": {
+            "start": 4,
+            "end": 5
+          }
+        }
+      ],
+      "mispronouncedGraphemes": []
+    },
+    {
+      "id": "w4",
+      "referenceWord": "une",
+      "producedText": "yn",
+      "status": "correct",
+      "faults": [],
+      "scorePercent": 99.99468100418821,
+      "phonemes": [
+        {
+          "referencePhoneme": "y",
+          "producedPhoneme": "y",
+          "scorePercent": 99.99706209749402,
+          "status": "correct",
+          "tolerated": false,
+          "graphemes": {
+            "start": 0,
+            "end": 1
+          }
+        },
+        {
+          "referencePhoneme": "n",
+          "producedPhoneme": "n",
+          "scorePercent": 99.99229991088238,
+          "status": "correct",
+          "tolerated": false,
+          "graphemes": {
+            "start": 1,
+            "end": 3
+          }
+        }
+      ],
+      "mispronouncedGraphemes": []
+    },
+    {
+      "id": "w5",
+      "referenceWord": "petite",
+      "producedText": "pati",
+      "status": "mispronounced",
+      "faults": [
+        "omission"
+      ],
+      "scorePercent": 60.102121359386274,
+      "phonemes": [
+        {
+          "referencePhoneme": "p",
+          "producedPhoneme": "p",
+          "scorePercent": 99.98537588567828,
+          "status": "correct",
+          "tolerated": false,
+          "graphemes": {
+            "start": 0,
+            "end": 1
+          }
+        },
+        {
+          "referencePhoneme": "ə",
+          "producedPhoneme": "a",
+          "scorePercent": 5.466466257319737,
+          "status": "correct",
+          "tolerated": false,
+          "graphemes": {
+            "start": 1,
+            "end": 2
+          }
+        },
+        {
+          "referencePhoneme": "t",
+          "producedPhoneme": "t",
+          "scorePercent": 95.06592821087206,
+          "status": "correct",
+          "tolerated": false,
+          "graphemes": {
+            "start": 2,
+            "end": 3
+          }
+        },
+        {
+          "referencePhoneme": "i",
+          "producedPhoneme": "i",
+          "scorePercent": 99.99283644306128,
+          "status": "correct",
+          "tolerated": false,
+          "graphemes": {
+            "start": 3,
+            "end": 4
+          }
+        },
+        {
+          "referencePhoneme": "t",
+          "producedPhoneme": null,
+          "scorePercent": 0.0,
+          "status": "omitted",
+          "tolerated": false,
+          "graphemes": {
+            "start": 4,
+            "end": 6
+          }
+        }
+      ],
+      "mispronouncedGraphemes": [
+        {
+          "start": 4,
+          "end": 6
+        }
+      ]
+    },
+    {
+      "id": "w6",
+      "referenceWord": "tarte",
+      "producedText": "tat",
+      "status": "mispronounced",
+      "faults": [
+        "omission"
+      ],
+      "scorePercent": 74.98768752203655,
+      "phonemes": [
+        {
+          "referencePhoneme": "t",
+          "producedPhoneme": "t",
+          "scorePercent": 99.98996244737262,
+          "status": "correct",
+          "tolerated": false,
+          "graphemes": {
+            "start": 0,
+            "end": 1
+          }
+        },
+        {
+          "referencePhoneme": "a",
+          "producedPhoneme": "a",
+          "scorePercent": 99.99310496276803,
+          "status": "correct",
+          "tolerated": false,
+          "graphemes": {
+            "start": 1,
+            "end": 2
+          }
+        },
+        {
+          "referencePhoneme": "ʁ",
+          "producedPhoneme": null,
+          "scorePercent": 0.0,
+          "status": "omitted",
+          "tolerated": false,
+          "graphemes": {
+            "start": 2,
+            "end": 3
+          }
+        },
+        {
+          "referencePhoneme": "t",
+          "producedPhoneme": "t",
+          "scorePercent": 99.96768267800557,
+          "status": "correct",
+          "tolerated": false,
+          "graphemes": {
+            "start": 3,
+            "end": 5
+          }
+        }
+      ],
+      "mispronouncedGraphemes": [
+        {
+          "start": 2,
+          "end": 3
+        }
+      ]
+    },
+    {
+      "id": "w7",
+      "referenceWord": "aux",
+      "producedText": "u",
+      "status": "mispronounced",
+      "faults": [
+        "substitution"
+      ],
+      "scorePercent": 2.6149873893663584,
+      "phonemes": [
+        {
+          "referencePhoneme": "o",
+          "producedPhoneme": "u",
+          "scorePercent": 2.6149873893663584,
+          "status": "mispronounced",
+          "tolerated": false,
+          "graphemes": {
+            "start": 0,
+            "end": 3
+          }
+        }
+      ],
+      "mispronouncedGraphemes": [
+        {
+          "start": 0,
+          "end": 3
+        }
+      ]
+    },
+    {
+      "id": "w8",
+      "referenceWord": "pommes.",
+      "producedText": "pɔm",
+      "status": "correct",
+      "faults": [],
+      "scorePercent": 93.05540069575079,
+      "phonemes": [
+        {
+          "referencePhoneme": "p",
+          "producedPhoneme": "p",
+          "scorePercent": 99.9959921394877,
+          "status": "correct",
+          "tolerated": false,
+          "graphemes": {
+            "start": 0,
+            "end": 1
+          }
+        },
+        {
+          "referencePhoneme": "ɔ",
+          "producedPhoneme": "ɔ",
+          "scorePercent": 79.17385485515123,
+          "status": "correct",
+          "tolerated": false,
+          "graphemes": {
+            "start": 1,
+            "end": 2
+          }
+        },
+        {
+          "referencePhoneme": "m",
+          "producedPhoneme": "m",
+          "scorePercent": 99.99635509261341,
+          "status": "correct",
+          "tolerated": false,
+          "graphemes": {
+            "start": 2,
+            "end": 6
+          }
+        }
+      ],
+      "mispronouncedGraphemes": []
+    },
+    {
+      "id": "i9",
+      "referenceWord": null,
+      "producedText": "ʁuʒ",
+      "status": "insertion",
+      "faults": [],
+      "scorePercent": null,
+      "phonemes": [],
+      "mispronouncedGraphemes": []
+    }
+  ]
+}
