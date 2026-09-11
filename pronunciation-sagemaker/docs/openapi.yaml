@@ -1,0 +1,442 @@
+openapi: 3.0.3
+
+info:
+  title: Ekinox Pronunciation Assessment — SageMaker inference container
+  version: "1.0.0"
+  description: |
+    The HTTP contract implemented by the Ekinox Pronunciation Assessment
+    SageMaker model package, available on AWS Marketplace.
+
+    This describes the container's own interface, which SageMaker calls on your
+    behalf. You do not call it directly: you call `InvokeEndpoint`, and
+    SageMaker forwards your body and `ContentType` to `POST /invocations`
+    unchanged and returns the response to you unchanged. This spec therefore
+    tells you what to put in an `InvokeEndpoint` body and what you get back.
+
+    Access control is IAM. There is no API key.
+
+    Real-time endpoints are what this model is for — an assessment is useful
+    while the speaker is still there. Batch Transform is supported too, one
+    utterance per S3 object with `SplitType: None`; note that `ContentType` is
+    set once per job and the multipart boundary lives inside it, so one boundary
+    has to be shared by the job and every input object. See
+    `/execution-parameters` below.
+
+    See `api.md` in this directory for field-by-field notes, and `../notebooks/`
+    for a runnable example.
+  license:
+    name: Apache-2.0
+    url: https://www.apache.org/licenses/LICENSE-2.0
+  contact:
+    name: Ekinox
+    url: https://ekinox.io
+
+externalDocs:
+  description: Field-by-field API reference
+  url: https://github.com/EkinoxIO/ekinox-marketplace/blob/main/pronunciation-sagemaker/docs/api.md
+
+servers:
+  - url: http://localhost:8080
+    description: |
+      The container's own listen address. Shown for completeness — in practice
+      SageMaker is the only caller, and you reach it through InvokeEndpoint.
+
+tags:
+  - name: inference
+    description: Pronunciation assessment.
+  - name: health
+    description: SageMaker container health contract.
+  - name: batch
+    description: SageMaker Batch Transform contract.
+
+paths:
+  /ping:
+    get:
+      tags: [health]
+      operationId: ping
+      summary: Container health check
+      description: |
+        Returns 200 once the container is ready to serve. SageMaker uses this to
+        decide when an endpoint is in service.
+
+        This reports process liveness, not model readiness: the first
+        `/invocations` call after start-up may still return 503 while the model
+        loads.
+      responses:
+        "200":
+          description: The container is running. The body is empty.
+
+  /execution-parameters:
+    get:
+      tags: [batch]
+      operationId: executionParameters
+      summary: Batch Transform settings this container expects
+      description: |
+        SageMaker calls this at the start of a Batch Transform job to learn the
+        settings the container expects. You never call it, and you do not need
+        to configure any of it — this is how the sensible values get applied on
+        your behalf.
+
+        It reports one record per request, a 6 MB payload ceiling, and three
+        concurrent requests per instance. The ceiling is the same one
+        `InvokeEndpoint` enforces for real-time, so the audio you can send is
+        the same in both modes.
+
+        Real-time endpoints ignore this entirely.
+      responses:
+        "200":
+          description: The container's Batch Transform settings.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ExecutionParameters"
+
+  /invocations:
+    post:
+      tags: [inference]
+      operationId: assessPronunciation
+      summary: Assess a recording against an expected text
+      description: |
+        Compares a recording against the text the speaker was supposed to say,
+        and returns an overall score plus a per-word and per-phoneme breakdown,
+        including character ranges suitable for highlighting mispronunciations
+        in a UI.
+
+        The request must be `multipart/form-data`. You generate the boundary and
+        pass the full `multipart/form-data; boundary=...` string as the
+        `InvokeEndpoint` `ContentType`.
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              $ref: "#/components/schemas/AssessmentRequest"
+            encoding:
+              audio:
+                contentType: audio/wav
+      responses:
+        "200":
+          description: Assessment result.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Assessment"
+        "400":
+          description: |
+            The body is `multipart/form-data` but could not be used: the
+            `Content-Type` carries no `boundary` parameter, the body is not
+            parseable against the boundary it does carry, a required part is
+            missing, `audio` is empty or is not decodable PCM16 WAV,
+            `expectedText` is blank, or `language` is not a supported value.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "415":
+          description: |
+            The `Content-Type` is not `multipart/form-data`. This endpoint
+            accepts no other media type — there is no JSON or CSV form of the
+            request, because the body has to carry binary audio.
+
+            Note the difference from the `400` above: a `multipart/form-data`
+            request missing its `boundary` parameter is a `400`, not a `415`.
+            The media type is the right one; the request is malformed.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "500":
+          description: An unexpected internal failure.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "503":
+          description: |
+            The model is not ready to serve. Transient at endpoint start-up;
+            retry with backoff.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+components:
+  schemas:
+
+    AssessmentRequest:
+      type: object
+      required: [language, audio, expectedText]
+      properties:
+        language:
+          type: string
+          description: |
+            Language of the recording and the expected text: `fr`, `fr-fr` or
+            `fr_fr` for French; `ar`, `ar-sa` or `ar_sa` for Arabic.
+
+            Expressed as a pattern rather than an enum because matching ignores
+            case and surrounding whitespace, which an enum cannot express. The
+            response echoes the short form, so `fr-fr` comes back as `fr`.
+          pattern: '^\s*([Ff][Rr]([-_][Ff][Rr])?|[Aa][Rr]([-_][Ss][Aa])?)\s*$'
+          example: fr-fr
+        audio:
+          type: string
+          format: binary
+          description: |
+            The recording to assess: a RIFF/WAVE file containing **16-bit
+            integer PCM**. Must not be empty. The part's own `Content-Type` is
+            ignored.
+
+            Any sample rate and channel count are accepted — audio is resampled
+            to 16 kHz and downmixed to mono internally. Anything that is not
+            PCM16 WAV (MP3, AAC, Opus, FLAC, 8/24-bit, 32-bit float) is
+            rejected with a 400.
+
+            There is no duration limit in the model itself; SageMaker caps an
+            InvokeEndpoint request at 6 MB and a response at 60 seconds.
+        expectedText:
+          type: string
+          minLength: 1
+          description: What the speaker was supposed to say.
+          example: Ceci est test final
+      # Deliberately not `additionalProperties: false`: the container ignores
+      # parts it does not recognise rather than rejecting the request.
+
+    Assessment:
+      type: object
+      required:
+        [language, accepted, scorePercent, faults, assessmentVersion, words]
+      properties:
+        language:
+          type: string
+          enum: [fr, ar]
+          description: Canonical language code.
+        accepted:
+          type: boolean
+          description: |
+            True when at least one word aligned to a word of `expectedText` and
+            no word was `mispronounced` or `omitted`. Not a score threshold; an
+            `insertion` never makes an utterance unacceptable.
+        scorePercent:
+          type: number
+          format: double
+          minimum: 0
+          maximum: 100
+          description: |
+            Overall score, higher is better. The average of the non-null word
+            scores.
+
+            This is a confidence readout, not a pass/fail signal: do not
+            threshold on it. Read `accepted` for whether the attempt was
+            acceptable.
+          example: 57.60892668016824
+        faults:
+          type: array
+          description: |
+            The distinct union of every word's `faults`: which kinds of mistake
+            occurred somewhere in the utterance, not how many or where.
+          items:
+            $ref: "#/components/schemas/Fault"
+        assessmentVersion:
+          type: string
+          description: |
+            Version of the assessment model that produced this result. Record it
+            alongside stored scores — scores are only comparable within one
+            version.
+          example: french-core-v4
+        words:
+          type: array
+          description: |
+            Per-word breakdown, aligned to `expectedText`. Not necessarily the
+            same length as the expected text's word count: an omitted word
+            appears with no produced text, and an inserted word with no
+            reference word.
+          items:
+            $ref: "#/components/schemas/WordAssessment"
+
+    WordAssessment:
+      type: object
+      # Every property is always emitted; the nullable ones carry null rather
+      # than being absent.
+      required:
+        [id, referenceWord, producedText, status, faults, scorePercent,
+         phonemes, mispronouncedGraphemes]
+      properties:
+        id:
+          type: string
+          description: Stable identifier within this response.
+          example: w0
+        referenceWord:
+          type: string
+          nullable: true
+          description: |
+            The expected word. Null when the speaker produced a word that was
+            not expected (`status: insertion`).
+        producedText:
+          type: string
+          nullable: true
+          description: |
+            What the speaker actually said, as phonemes. Null when nothing was
+            produced (`status: omitted`).
+        status:
+          $ref: "#/components/schemas/Status"
+        faults:
+          type: array
+          items:
+            $ref: "#/components/schemas/Fault"
+        scorePercent:
+          type: number
+          format: double
+          nullable: true
+          description: |
+            Score for this word, 0-100: the average of its phoneme scores.
+            Null when a score would be meaningless, such as an inserted word
+            with no reference to compare against.
+        phonemes:
+          type: array
+          items:
+            $ref: "#/components/schemas/PhonemeAssessment"
+        mispronouncedGraphemes:
+          type: array
+          description: |
+            Character ranges to highlight, relative to this word's
+            `referenceWord`. Empty unless `status` is `mispronounced`.
+
+            Not the union of the phonemes' `graphemes`: an inserted sound has a
+            null `graphemes` of its own, yet still contributes a span here when
+            it corresponds to a silent letter of the reference word (pronouncing
+            the "t" in "est"). Read this field for highlighting rather than
+            assembling spans from `phonemes`.
+          items:
+            $ref: "#/components/schemas/GraphemeSpan"
+
+    PhonemeAssessment:
+      type: object
+      # Every property is always emitted; the nullable ones carry null rather
+      # than being absent.
+      required:
+        [referencePhoneme, producedPhoneme, scorePercent, status, tolerated,
+         graphemes]
+      properties:
+        referencePhoneme:
+          type: string
+          nullable: true
+          description: Expected phoneme, in IPA. Null for an inserted phoneme.
+          example: "b"
+        producedPhoneme:
+          type: string
+          nullable: true
+          description: |
+            Phoneme actually produced, in IPA. Null for an omitted phoneme.
+          example: "s"
+        scorePercent:
+          type: number
+          format: double
+          minimum: 0
+          maximum: 100
+          description: |
+            Score for this phoneme: how confident the model was that the
+            expected phoneme was the one produced. 0 when the expected phoneme
+            is not among the plausible candidates at all.
+        status:
+          $ref: "#/components/schemas/Status"
+        tolerated:
+          type: boolean
+          description: |
+            True when a tolerance rule forgave this position rather than the
+            speaker matching the reference. Counts as acceptable, but the
+            phoneme was not produced as written.
+
+            Such a phoneme keeps `status: correct` while scoring low, because
+            the speaker did say something else. Read `status` and
+            `scorePercent` together rather than colouring by score alone.
+        graphemes:
+          # Spelled out rather than $ref'd to GraphemeSpan: in OAS 3.0 a
+          # nullable $ref has no unambiguous form — `allOf` still requires the
+          # referenced object, so the null this field really returns fails
+          # validation. Keep in step with GraphemeSpan below.
+          type: object
+          nullable: true
+          required: [start, end]
+          properties:
+            start:
+              type: integer
+              minimum: 0
+            end:
+              type: integer
+              minimum: 0
+          description: |
+            The letters spelling this phoneme. Null for an inserted sound, and
+            for spellings the letter-to-sound rules cannot align. Note that a
+            null here does not mean the word reports no span — see
+            `mispronouncedGraphemes`.
+
+    GraphemeSpan:
+      type: object
+      required: [start, end]
+      description: |
+        A half-open range of UTF-16 code units inside the enclosing word's own
+        `referenceWord` — `referenceWord[start, end)` — not into the full
+        `expectedText`.
+      properties:
+        start:
+          type: integer
+          minimum: 0
+        end:
+          type: integer
+          minimum: 0
+
+    Status:
+      type: string
+      description: Alignment outcome for a word or a phoneme.
+      enum: [correct, mispronounced, omitted, insertion]
+
+    Fault:
+      type: string
+      description: |
+        The kind of mistake made, where `status` only says that one was made.
+        The vocabulary is language-specific and may grow with a model version,
+        so treat an unrecognised value as an unspecified fault rather than
+        failing. See `api.md` for what each one means.
+
+        French: substitution, insertion, omission, obligatory_liaison,
+        forbidden_liaison.
+
+        Arabic: assimilation_al_shams, close_consonant_confusion,
+        long_short_vowel_confusion, missing_shadda, extra_shadda,
+        ta_marbouta_final, tanwin_end, tashkil_end, tashkil_start_middle,
+        wasl_liaison.
+      example: substitution
+
+    ExecutionParameters:
+      type: object
+      description: |
+        Field names and casing are SageMaker's own, not this product's.
+      required: [MaxConcurrentTransforms, BatchStrategy, MaxPayloadInMB]
+      properties:
+        MaxConcurrentTransforms:
+          type: integer
+          description: |
+            Requests SageMaker may have in flight against one instance.
+          example: 3
+        BatchStrategy:
+          type: string
+          enum: [SINGLE_RECORD]
+          description: |
+            One record per request. `/invocations` reads a single
+            `multipart/form-data` body and has no notion of several records in
+            one payload, so `MULTI_RECORD` is not offered.
+        MaxPayloadInMB:
+          type: integer
+          description: |
+            Largest request body, in MB. Matches `InvokeEndpoint`'s real-time
+            ceiling deliberately, so one number covers both modes.
+          example: 6
+
+    Error:
+      type: object
+      required: [error]
+      properties:
+        error:
+          type: string
+          description: Human-readable description of what went wrong.
+          example: "Unsupported language 'de'."

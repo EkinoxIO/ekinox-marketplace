@@ -1,0 +1,14 @@
+.DS_Store
+
+# Notebook scratch
+.ipynb_checkpoints/
+__pycache__/
+*.pyc
+
+# Local Python environments
+.venv/
+venv/
+
+# IDEs
+.idea/
+.vscode/
